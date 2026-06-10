@@ -29,9 +29,9 @@ return [
         'http://localhost:4134',
         
         // Production
-        'https://megapak.ru',
-        'https://www.megapak.ru',
-        'https://auth.megapak.ru',
+        'https://megapak.top',
+        'https://www.megapak.top',
+        'https://auth.megapak.top',
     ]),
 
     'allowed_origins_patterns' => [],
