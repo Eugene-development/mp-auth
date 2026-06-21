@@ -33,7 +33,7 @@ class NotificationController extends Controller
             ]);
 
             // Get manager/admin email from env
-            $adminEmail = env('ADMIN_EMAIL', 'zakaz@megapaks.ru');
+            $adminEmail = env('ADMIN_EMAIL', 'info@megapak.top');
 
             // Prepare email content
             $emailData = [
@@ -104,7 +104,7 @@ class NotificationController extends Controller
             ]);
 
             // Get manager/admin email from env
-            $adminEmail = env('ADMIN_EMAIL', 'zakaz@megapaks.ru');
+            $adminEmail = env('ADMIN_EMAIL', 'info@megapak.top');
 
             // Prepare email content
             $emailData = [
