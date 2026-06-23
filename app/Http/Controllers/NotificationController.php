@@ -43,7 +43,7 @@ class NotificationController extends Controller
                 'email' => $request->email,
                 'comment' => $request->comment ?? 'Не указано',
                 'source_url' => $request->source_url ?? 'Не указано',
-                'submitted_at' => now()->format('d.m.Y H:i:s'),
+                'submitted_at' => now()->setTimezone('Europe/Moscow')->format('d.m.Y H:i:s') . ' (МСК)',
             ];
 
             // Send email using a Blade template
@@ -112,7 +112,7 @@ class NotificationController extends Controller
                 'contact' => $request->contact,
                 'comment' => $request->comment ?? 'Не указано',
                 'source_url' => $request->source_url ?? 'Не указано',
-                'submitted_at' => now()->format('d.m.Y H:i:s'),
+                'submitted_at' => now()->setTimezone('Europe/Moscow')->format('d.m.Y H:i:s') . ' (МСК)',
             ];
 
             // Send email using a Blade template
