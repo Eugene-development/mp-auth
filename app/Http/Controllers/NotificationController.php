@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SmartCaptchaService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
@@ -13,8 +14,11 @@ class NotificationController extends Controller
 {
     /**
      * Send invoice request notification email
+     *
+     * @param  Request              $request
+     * @param  SmartCaptchaService  $captcha  Внедряется через DI-контейнер Laravel.
      */
-    public function sendInvoiceRequest(Request $request)
+    public function sendInvoiceRequest(Request $request, SmartCaptchaService $captcha)
     {
         try {
             Log::info('Invoice request notification received', [
@@ -23,6 +27,18 @@ class NotificationController extends Controller
                 'email' => $request->input('email'),
             ]);
 
+            // Антибот-проверка №1: серверная верификация токена SmartCaptcha.
+            // До неё заявка не проходит валидацию и не доходит до отправки письма.
+            // Формат ответа совпадает с прочими ошибками валидации (errors[]), чтобы
+            // фронт отобразил сообщение штатным образом.
+            if (!$captcha->verify($request->input('captcha_token'), $captcha->clientIp($request))) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Не пройдена проверка безопасности.',
+                    'errors' => ['captcha' => ['Подтвердите, что вы не робот.']],
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
             $request->validate([
                 'company_name' => 'required|string|max:255',
                 'contact_person' => 'required|string|max:255',
@@ -30,6 +46,8 @@ class NotificationController extends Controller
                 'email' => 'required|email|max:255',
                 'comment' => 'nullable|string|max:2000',
                 'source_url' => 'nullable|string|max:500',
+                // captcha_token не валидируется здесь — он уже проверен выше.
+                'captcha_token' => 'nullable|string',
             ]);
 
             // Get manager/admin email from env
@@ -87,8 +105,11 @@ class NotificationController extends Controller
 
     /**
      * Send price request notification email
+     *
+     * @param  Request              $request
+     * @param  SmartCaptchaService  $captcha
      */
-    public function sendPriceRequest(Request $request)
+    public function sendPriceRequest(Request $request, SmartCaptchaService $captcha)
     {
         try {
             Log::info('Price request notification received', [
@@ -96,11 +117,21 @@ class NotificationController extends Controller
                 'contact' => $request->input('contact'),
             ]);
 
+            // Антибот-проверка №1: серверная верификация токена SmartCaptcha.
+            if (!$captcha->verify($request->input('captcha_token'), $captcha->clientIp($request))) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Не пройдена проверка безопасности.',
+                    'errors' => ['captcha' => ['Подтвердите, что вы не робот.']],
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+
             $request->validate([
                 'name' => 'required|string|max:255',
                 'contact' => 'required|string|max:255',
                 'comment' => 'nullable|string|max:2000',
                 'source_url' => 'nullable|string|max:500',
+                'captcha_token' => 'nullable|string',
             ]);
 
             // Get manager/admin email from env

@@ -35,4 +35,18 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Yandex SmartCaptcha
+    |--------------------------------------------------------------------------
+    | Серверная верификация токена невидимой капчи (см. app/Services/SmartCaptchaService).
+    | secret — серверный ключ (НЕ клиентский sitekey). Без ключа сервис работает
+    | в режиме fail-open: проверка пропускается (для стейджинга/локалки).
+    | @see https://yandex.cloud/en/docs/smartcaptcha/quickstart
+    */
+    'smartcaptcha' => [
+        'server_url' => env('SMARTCAPTCHA_SERVER_URL', 'https://smartcaptcha.yandexcloud.net/validate'),
+        'secret' => env('SMARTCAPTCHA_SECRET_KEY'),
+    ],
+
 ];
