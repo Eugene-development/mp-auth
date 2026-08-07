@@ -73,6 +73,17 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Доверенный серверный счёт клик-целей вовлечения, прошедших гейт
+        // (nonce + rate-limit). Не зависит от клиентской reachGoal — источник
+        // истины при сверке с Метрикой. Отдельный файл, ротация daily.
+        'engagement' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/engagement.log'),
+            'level' => 'info',
+            'days' => env('ENGAGEMENT_LOG_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

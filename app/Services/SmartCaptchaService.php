@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 
 /**
  * Серверная верификация токена Yandex SmartCaptcha.
@@ -44,7 +45,8 @@ class SmartCaptchaService
             return true;
         }
 
-        // Нет токена — не пройдено. Это блокирует прямые запросы без капчи.
+        // Нет токена — жёсткий отказ на этом уровне. Решение «принять заявку без
+        // токена» принимается отдельно и осознанно — см. allowWithoutToken().
         if (empty($token)) {
             return false;
         }
@@ -82,6 +84,51 @@ class SmartCaptchaService
             ]);
             return false;
         }
+    }
+
+    /**
+     * Активна ли защита (задан серверный ключ).
+     */
+    public function isEnabled(): bool
+    {
+        return !empty(config('services.smartcaptcha.secret'));
+    }
+
+    /**
+     * Можно ли принять заявку БЕЗ токена капчи.
+     *
+     * Ситуация: у посетителя не загрузился captcha.js (ad-block режет домен
+     * Яндекса, сбой CDN). Токена он не получит никогда, и жёсткий отказ означает
+     * потерянный лид — для формы заявки это дороже, чем риск пропустить спам.
+     *
+     * Компромисс: принимаем, но под жёстким лимитом по IP (по умолчанию 2 в час).
+     * Массовая накрутка через этот путь становится бессмысленной, а живой человек
+     * с ad-block свою одну заявку отправит. Каждый такой случай пишется в лог,
+     * письмо помечается — чтобы менеджер видел, что проверка не проходила.
+     *
+     * Полностью отключается через SMARTCAPTCHA_ALLOW_UNVERIFIED=false.
+     *
+     * @param  string|null $ip IP посетителя (без IP лимит не построить → отказ).
+     */
+    public function allowWithoutToken(?string $ip): bool
+    {
+        if (!config('services.smartcaptcha.allow_unverified')) {
+            return false;
+        }
+
+        if (empty($ip)) {
+            return false;
+        }
+
+        $maxPerHour = max(1, (int) config('services.smartcaptcha.allow_unverified_per_hour', 2));
+
+        // attempt() сам инкрементирует счётчик и возвращает false при исчерпании.
+        return (bool) RateLimiter::attempt(
+            'captcha-unverified:' . sha1($ip),
+            $maxPerHour,
+            fn () => true,
+            3600
+        );
     }
 
     /**

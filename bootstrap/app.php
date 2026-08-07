@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Middleware\AuthenticateAdminJwt;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -13,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'admin.jwt' => AuthenticateAdminJwt::class,
+        ]);
+
         // Exclude all API routes from CSRF verification
         $middleware->validateCsrfTokens(except: [
             'api/*',
@@ -20,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Enable CORS for API routes
         $middleware->api(prepend: [
-            \Illuminate\Http\Middleware\HandleCors::class,
+            HandleCors::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -143,6 +143,8 @@
                 <p>{{ $comment }}</p>
             </div>
             @endif
+
+            @include('emails.partials.utm-block')
         </div>
 
         <div class="footer">

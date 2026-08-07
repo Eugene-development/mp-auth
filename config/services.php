@@ -47,6 +47,16 @@ return [
     'smartcaptcha' => [
         'server_url' => env('SMARTCAPTCHA_SERVER_URL', 'https://smartcaptcha.yandexcloud.net/validate'),
         'secret' => env('SMARTCAPTCHA_SECRET_KEY'),
+
+        // Заявка без токена капчи (у клиента не загрузился captcha.js: ad-block,
+        // сбой CDN Яндекса). true — принимаем такие заявки, но под жёстким лимитом
+        // по IP (см. allow_unverified_per_hour) и с пометкой в теме письма.
+        // false — жёсткий отказ (максимум защиты, но живой посетитель с ad-block
+        // не сможет отправить заявку вообще).
+        'allow_unverified' => env('SMARTCAPTCHA_ALLOW_UNVERIFIED', true),
+
+        // Сколько непроверенных заявок принимать с одного IP в час.
+        'allow_unverified_per_hour' => (int) env('SMARTCAPTCHA_UNVERIFIED_PER_HOUR', 2),
     ],
 
 ];
