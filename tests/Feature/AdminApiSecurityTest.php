@@ -20,4 +20,11 @@ class AdminApiSecurityTest extends TestCase
             'contact' => '+7 999 000-00-00',
         ])->assertUnauthorized();
     }
+
+    public function test_offline_conversions_cannot_be_exported_without_a_jwt(): void
+    {
+        $this->getJson('/api/admin/leads/offline/export?period=day&date=2026-08-08')
+            ->assertUnauthorized()
+            ->assertJsonPath('success', false);
+    }
 }

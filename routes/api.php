@@ -28,6 +28,8 @@ Route::post('/admin/login', [AdminAuthController::class, 'login'])
 
 Route::prefix('admin')->middleware(['admin.jwt', 'throttle:120,1'])->group(function () {
     Route::get('/leads', [AdminLeadController::class, 'index']);
+    Route::get('/leads/offline/export', [AdminLeadController::class, 'exportOffline'])
+        ->middleware('throttle:20,1');
     Route::post('/leads/offline', [AdminLeadController::class, 'storeOffline'])
         ->middleware('throttle:30,1');
 });
