@@ -45,6 +45,7 @@ COPY --chown=laravel:laravel . .
 
 # Copy composer dependencies
 COPY --from=composer-build --chown=laravel:laravel /app/vendor ./vendor
+COPY cert/mysql-ca.pem /var/www/cert/mysql-ca.pem
 
 # Clear cached service providers (may contain dev dependencies)
 RUN rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
@@ -97,3 +98,5 @@ CMD ["php-fpm"]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD php-fpm -t || exit 1
+
+RUN printf '[www]\nclear_env = no\n' > /usr/local/etc/php-fpm.d/zz-runtime-env.conf

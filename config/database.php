@@ -3,6 +3,12 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
+// Public CA path is relative to the service root locally and in Docker.
+$mysqlCa = (string) env('MYSQL_ATTR_SSL_CA', '');
+if ($mysqlCa !== '' && !str_starts_with($mysqlCa, '/')) {
+    $mysqlCa = base_path($mysqlCa);
+}
+
 return [
 
     /*
@@ -60,7 +66,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => base_path(env('MYSQL_ATTR_SSL_CA')),
+                PDO::MYSQL_ATTR_SSL_CA => $mysqlCa !== '' ? $mysqlCa : null,
             ]) : [],
         ],
 
@@ -80,7 +86,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                Mysql::ATTR_SSL_CA => $mysqlCa !== '' ? $mysqlCa : null,
             ]) : [],
         ],
 

@@ -49,3 +49,12 @@ Dockerfile*
 # Temporary files
 *.log
 *.tmp
+
+# Runtime credentials stay on the host; only the public CA enters the image.
+.env
+.env.*
+cert/*
+!cert/mysql-ca.pem
+secrets/
+.claude/
+graphify-out/
